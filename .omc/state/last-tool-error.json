@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /home/swtee0506/petfit/backend/tools/crawler && python explore_samsung.py 2>&1\",\"timeout\":120000,\"description\":\"Run Samsung DOM explorer\"}",
+  "error": "Exit code 127\n/bin/bash: line 1: python: command not found",
+  "timestamp": "2026-05-09T13:12:06.461Z",
+  "retry_count": 1
+}

@@ -1,0 +1,29 @@
+# Java
+backend/target/
+backend/*.jar
+*.class
+
+# Python
+__pycache__/
+*.pyc
+backend/tools/output/
+backend/tools/crawler/hyundai_cat_full.html
+backend/tools/crawler/hyundai_cat_info.html
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# 환경변수
+.env
+*.env
+application-local.yml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
