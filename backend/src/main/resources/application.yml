@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/petfit}
+    username: ${MYSQL_USER:petfit}
+    password: ${MYSQL_PASSWORD:petfit}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/petfit}
+      database: petfit
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8080
