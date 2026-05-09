@@ -1,0 +1,42 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths: [backend/**]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: cd backend && ./mvnw package -DskipTests
+
+      - name: Copy JAR to OCI VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          source: backend/target/petfit-backend-*.jar
+          target: /opt/petfit/
+          strip_components: 2
+
+      - name: Rename JAR and restart service
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_HOST }}
+          username: ${{ secrets.OCI_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          script: |
+            ln -sf /opt/petfit/petfit-backend-*.jar /opt/petfit/petfit-latest.jar
+            sudo systemctl restart petfit
+            sudo systemctl is-active --quiet petfit && echo "Service started OK" || (echo "Service failed to start" && exit 1)

@@ -1,0 +1,15 @@
+[Unit]
+Description=PetFit Spring Boot
+After=network.target
+
+[Service]
+User=petfit
+EnvironmentFile=/opt/petfit/.env
+ExecStart=java -jar /opt/petfit/petfit-latest.jar
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
