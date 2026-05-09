@@ -2,6 +2,8 @@
 
 > "보험료가 싼 순"이 아닌, **"우리 아이 품종에 맞는 특약이 있는 순"** 으로 추천합니다.
 
+[![GitHub](https://img.shields.io/badge/GitHub-soohwanlim%2Fpetfit-181717?logo=github)](https://github.com/soohwanlim/petfit)
+
 ---
 
 ## 📌 프로젝트 개요
@@ -17,6 +19,28 @@
 | 추천 기준 | 보험료 중심 | 보장 내용·한도 비교 | **품종별 특약 적합도 점수** |
 | 면책 기간 안내 | 없음 | 상품별 확인 가능 | **품종별 발병 시기 연동** |
 | 품종별 질환 데이터 | 없음 | 없음 | **수의학 문헌 기반** |
+
+---
+
+## 🖥 프로토타입 (백엔드 없이 로컬 실행)
+
+DB·서버 없이 바로 실행할 수 있는 정적 프로토타입입니다.  
+크롤링한 실제 보험사 데이터를 기반으로 동작합니다.
+
+```bash
+cd frontend
+npm install
+npm run dev
+# http://localhost:5173
+```
+
+**프로토타입 기능**
+- 고양이 품종 선택 (한국어 품종명 포함, 15개)
+- 고양이 나이 입력 (0~15세, 0.5 단위)
+- 아팠던 곳 다중 선택 (비뇨기 / 심장 / 관절 / 피부 / 치과 / 호흡기 / 소화기 / 눈)
+- 4개 보험사 적합도 점수 비교 (특약 적합도 / 보장 비율 / 면책 기간)
+- 품종·병력 기반 추천 특약 표시
+- 각 보험사 가입 페이지 직접 링크
 
 ---
 
@@ -36,7 +60,7 @@
 - **Cloudflare Pages** (프론트엔드, GitHub push 시 자동 배포)
 
 ### 데이터 수집
-- **Playwright** + **BeautifulSoup** — 4개 보험사 자동 크롤러
+- **Playwright** + **BeautifulSoup** — 4개 보험사 자동 크롤러 (메리츠/KB/현대해상/삼성화재)
 - **Claude API** — 약관 PDF 구조화 파서
 
 ---
@@ -55,7 +79,8 @@ MongoDB Atlas (반정형 데이터 — 자주 바뀜)
 └── insurance_products  보험 상품 + 특약 내장 Document
 ```
 
-보험 상품은 매년 약관이 개정되고 특약이 추가·삭제됩니다. MongoDB Document 구조는 새 필드가 추가되어도 기존 상품에 영향이 없어 유연하게 대응할 수 있습니다.
+보험 상품은 매년 약관이 개정되고 특약이 추가·삭제됩니다.  
+MongoDB Document 구조는 새 필드가 추가되어도 기존 상품에 영향이 없어 유연하게 대응할 수 있습니다.
 
 ### 레이어 구조
 
@@ -82,23 +107,28 @@ Controller → Service → Repository (interface)
 
 ### 1. 품종별 특약 적합도 점수화
 
-보험 상품을 5개 항목으로 점수화해 내림차순 정렬합니다.
+보험 상품을 3개 항목으로 점수화해 내림차순 정렬합니다.
 
 ```
-총점 = 특약 적합도 + 보장 비율 + 면책 기간 타이밍 + 갱신 조건 + 청구 편의성
+총점 = 특약 적합도 (품종 취약 질환 × 발병률 가중치)
+     + 보장 비율 (70% / 80% / 90%)
+     + 면책 기간 타이밍 (현재 나이 + 면책 기간 vs 평균 발병 나이)
 ```
 
 ### 2. 발병률 그래프 + 면책 기간 오버레이
 
-품종·질병을 선택하고 현재 나이를 입력하면, 나이별 누적 발병률 곡선 위에 면책 기간 구간이 오버레이됩니다. "지금 가입하면 면책 기간 안에 발병 위험이 얼마나 되는지"를 한눈에 파악할 수 있습니다.
+품종·질병을 선택하고 현재 나이를 입력하면,  
+나이별 누적 발병률 곡선 위에 면책 기간 구간이 오버레이됩니다.
 
-### 3. 보험사 데이터 자동 수집
+### 3. 보험사 데이터 자동 수집 크롤러
 
-Playwright 헤드리스 브라우저로 4개 보험사 상품 페이지를 크롤링하고, 변경 감지(SHA-256 해시 비교)로 약관 변경을 자동으로 탐지합니다.
+Playwright 헤드리스 브라우저로 4개 보험사 상품 페이지를 크롤링하고,  
+SHA-256 해시 비교로 약관 변경을 자동 탐지합니다.
 
-```
-지원 보험사: 메리츠화재 펫퍼민트 / KB손보 금쪽같은펫보험 /
-            현대해상 우리펫보험 / 삼성화재 착한펫보험
+```bash
+cd backend/tools/crawler
+pip install -r requirements.txt
+python3 crawl.py
 ```
 
 ---
@@ -123,48 +153,11 @@ petfit/
 │       └── pdf-parser/      # Claude API 약관 PDF 파서
 └── frontend/
     └── src/
+        ├── data/            # 정적 데이터 (breeds.js, diseases.js, insuranceProducts.js)
         ├── components/      # ScoreBadge, BreedSelector, RecommendationCard
         ├── pages/           # HomePage
         ├── hooks/           # useBreeds, useRecommendations
-        └── services/        # API 호출
-```
-
----
-
-## 🚀 로컬 실행 방법
-
-### 환경변수 설정
-
-```bash
-export MYSQL_URL=jdbc:mysql://localhost:3306/petfit
-export MYSQL_USER=petfit
-export MYSQL_PASSWORD=petfit
-export MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/petfit
-```
-
-### 백엔드 실행
-
-```bash
-cd backend
-mvn spring-boot:run
-# http://localhost:8080
-```
-
-### 프론트엔드 실행
-
-```bash
-cd frontend
-npm install
-npm run dev
-# http://localhost:5173
-```
-
-### 크롤러 실행
-
-```bash
-cd backend/tools/crawler
-pip install -r requirements.txt
-python3 crawl.py
+        └── services/        # staticApi.js (프로토타입) / api.js (백엔드 연동)
 ```
 
 ---
@@ -181,9 +174,30 @@ python3 crawl.py
 
 ---
 
+## 🚀 백엔드 실행 방법
+
+### 환경변수 설정
+
+```bash
+export MYSQL_URL=jdbc:mysql://localhost:3306/petfit
+export MYSQL_USER=petfit
+export MYSQL_PASSWORD=petfit
+export MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/petfit
+```
+
+### 실행
+
+```bash
+cd backend
+mvn spring-boot:run
+# http://localhost:8080
+```
+
+---
+
 ## 📝 개발 배경 및 기록
 
-- [PetFit 개발기 시리즈 (Velog)](https://velog.io/@soohwanlim/PetFit-개발기-0-반려동물-병원비-너무-비싸다) — 도메인 분석, User Story, SOLID 설계, 구현 후기
+- **[PetFit 개발기 시리즈 (Velog)](https://velog.io/@soohwanlim/PetFit-%EA%B0%9C%EB%B0%9C%EA%B8%B0-0-%EB%B0%98%EB%A0%A4%EB%8F%99%EB%AC%BC-%EB%B3%91%EC%9B%90%EB%B9%84-%EB%84%88%EB%AC%B4-%EB%B9%84%EC%8B%B8%EB%8B%A4)** — 도메인 분석, User Story, SOLID 설계, 구현 후기
 
 ---
 
