@@ -183,7 +183,7 @@ python3 crawl.py
 
 ## 📝 개발 배경 및 기록
 
-- [PetFit 개발기 시리즈 (Velog)]([https://velog.io/@soohwanlim](https://velog.io/@soohwanlim/PetFit-%EA%B0%9C%EB%B0%9C%EA%B8%B0-0-%EB%B0%98%EB%A0%A4%EB%8F%99%EB%AC%BC-%EB%B3%91%EC%9B%90%EB%B9%84-%EB%84%88%EB%AC%B4-%EB%B9%84%EC%8B%B8%EB%8B%A4)) — 도메인 분석, User Story, SOLID 설계, 구현 후기
+- [PetFit 개발기 시리즈 (Velog)](https://velog.io/@soohwanlim/PetFit-개발기-0-반려동물-병원비-너무-비싸다) — 도메인 분석, User Story, SOLID 설계, 구현 후기
 
 ---
 
