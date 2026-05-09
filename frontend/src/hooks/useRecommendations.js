@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { getRecommendations } from '../services/api'
+import { getRecommendations } from '../services/staticApi'
 
-export function useRecommendations(breedId) {
+export function useRecommendations(breedId, catAge, illnesses) {
   const [recommendations, setRecommendations] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  const illnessKey = illnesses?.join(',') ?? ''
 
   useEffect(() => {
     if (!breedId) {
@@ -13,11 +15,11 @@ export function useRecommendations(breedId) {
     }
     setLoading(true)
     setError(null)
-    getRecommendations(breedId)
+    getRecommendations(breedId, catAge, illnesses ?? [])
       .then(r => setRecommendations(r.data))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
-  }, [breedId])
+  }, [breedId, catAge, illnessKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return { recommendations, loading, error }
 }

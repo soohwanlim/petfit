@@ -20,7 +20,7 @@ export default function RecommendationList({ recommendations, loading, error }) 
   return (
     <div className="space-y-3">
       {recommendations.map(r => (
-        <RecommendationCard key={r.productId} recommendation={r} />
+        <RecommendationCard key={r.id} recommendation={r} />
       ))}
     </div>
   )

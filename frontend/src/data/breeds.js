@@ -1,0 +1,17 @@
+export const breeds = [
+  { id: 1,  name: 'Maine Coon',           koreanName: '메인쿤',           description: 'Large, sociable cat; one of the oldest natural breeds in North America' },
+  { id: 2,  name: 'Persian',              koreanName: '페르시안',          description: 'Flat-faced, long-haired breed known for its calm temperament' },
+  { id: 3,  name: 'Siamese',              koreanName: '샴',               description: 'Vocal, social cat with distinctive color points' },
+  { id: 4,  name: 'Ragdoll',              koreanName: '랙돌',             description: 'Large, docile cat that goes limp when held' },
+  { id: 5,  name: 'Bengal',               koreanName: '벵갈',             description: 'Active, athletic cat with a wild leopard-like appearance' },
+  { id: 6,  name: 'British Shorthair',    koreanName: '브리티시숏헤어',    description: 'Stocky, easygoing breed with a dense, plush coat' },
+  { id: 7,  name: 'Scottish Fold',        koreanName: '스코티쉬폴드',     description: 'Distinctive folded ears caused by a cartilage mutation' },
+  { id: 8,  name: 'Sphynx',              koreanName: '스핑크스',          description: 'Hairless breed known for its extroverted, affectionate personality' },
+  { id: 9,  name: 'Abyssinian',           koreanName: '아비시니안',        description: 'Slender, active cat with a ticked tabby coat' },
+  { id: 10, name: 'Norwegian Forest Cat', koreanName: '노르웨이숲고양이',  description: 'Large, semi-longhaired breed adapted to cold climates' },
+  { id: 11, name: 'Birman',              koreanName: '버만',              description: 'Silky semi-longhaired breed with white-gloved paws' },
+  { id: 12, name: 'Burmese',             koreanName: '버미즈',            description: 'Compact, muscular cat with a satin-like coat' },
+  { id: 13, name: 'Devon Rex',           koreanName: '데본렉스',           description: 'Curly-coated cat with large ears and a pixie-like face' },
+  { id: 14, name: 'Manx',               koreanName: '맹크스',             description: 'Tailless or short-tailed breed originating from the Isle of Man' },
+  { id: 15, name: 'Turkish Van',         koreanName: '터키쉬반',           description: 'Semi-longhaired breed known for its love of water' },
+]
