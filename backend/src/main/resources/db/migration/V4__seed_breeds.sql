@@ -1,0 +1,16 @@
+INSERT INTO breed (name, description) VALUES
+('Maine Coon',          'Large, sociable cat; one of the oldest natural breeds in North America'),
+('Persian',             'Flat-faced, long-haired breed known for its calm temperament'),
+('Siamese',             'Vocal, social cat with distinctive color points'),
+('Ragdoll',             'Large, docile cat that goes limp when held'),
+('Bengal',              'Active, athletic cat with a wild leopard-like appearance'),
+('British Shorthair',   'Stocky, easygoing breed with a dense, plush coat'),
+('Scottish Fold',       'Distinctive folded ears caused by a cartilage mutation'),
+('Sphynx',              'Hairless breed known for its extroverted, affectionate personality'),
+('Abyssinian',          'Slender, active cat with a ticked tabby coat'),
+('Norwegian Forest Cat','Large, semi-longhaired breed adapted to cold climates'),
+('Birman',              'Silky semi-longhaired breed with white-gloved paws'),
+('Burmese',             'Compact, muscular cat with a satin-like coat'),
+('Devon Rex',           'Curly-coated cat with large ears and a pixie-like face'),
+('Manx',                'Tailless or short-tailed breed originating from the Isle of Man'),
+('Turkish Van',         'Semi-longhaired breed known for its love of water');
