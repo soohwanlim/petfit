@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /home/swtee0506/petfit/backend/tools && python3 import_to_mongo.py --dry-run 2>&1\",\"description\":\"Dry-run import script\"}",
+  "error": "Exit code 1\nConnecting to mongodb://localhost:27017 / petfit…\nERROR: Cannot reach MongoDB: localhost:27017: [Errno 111] Connection refused (configured timeouts: socketTimeoutMS: 20000.0ms, connectTimeoutMS: 20000.0ms), Timeout: 5.0s, Topology Description: <TopologyDescription id: 69ff33be2c28f66097c14060, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused (configured timeo...",
+  "timestamp": "2026-05-09T13:16:51.895Z",
+  "retry_count": 3
+}
