@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getBreeds } from '../services/staticApi'
+import { getBreeds } from '../services/api'
 
 export function useBreeds() {
   const [breeds, setBreeds] = useState([])

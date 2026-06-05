@@ -15,15 +15,22 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
 
     @GetMapping
-    public List<RecommendationDto> get(@RequestParam Long breedId) {
-        return recommendationService.getRecommendations(breedId).stream()
+    public List<RecommendationDto> get(
+            @RequestParam Long breedId,
+            @RequestParam(required = false) Double catAge,
+            @RequestParam(required = false) List<String> illnesses) {
+        return recommendationService.getRecommendations(breedId, catAge, illnesses).stream()
                 .map(r -> new RecommendationDto(
-                        r.getProduct().getId(),
+                        r.getProduct().getId(), // mapped to `id` field
                         r.getProduct().getProductName(),
                         r.getProduct().getProvider(),
                         r.getProduct().getMonthlyPremium(),
+                        r.getProduct().getUrl(),
                         r.getScore(),
-                        r.getMatchedRiders()
+                        r.getBreakdown(),
+                        r.getMatchedRiders(),
+                        r.getIllnessRiders(),
+                        r.getWaitingWarnings()
                 ))
                 .toList();
     }

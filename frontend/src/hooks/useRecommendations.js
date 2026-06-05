@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getRecommendations } from '../services/staticApi'
+import { getRecommendations } from '../services/api'
 
 export function useRecommendations(breedId, catAge, illnesses) {
   const [recommendations, setRecommendations] = useState([])

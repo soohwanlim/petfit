@@ -21,5 +21,7 @@ public class InsuranceProduct {
     private String productName;
     private String provider;
     private Double monthlyPremium;
+    private Double coverageRatio;
+    private String url;
     private List<Rider> riders = new ArrayList<>();
 }

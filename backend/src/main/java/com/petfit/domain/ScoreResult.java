@@ -7,6 +7,9 @@ import java.util.List;
 @Value
 public class ScoreResult {
     InsuranceProduct product;
-    double score;
+    int score;
+    ScoreBreakdown breakdown;
     List<String> matchedRiders;
+    List<String> illnessRiders;
+    List<String> waitingWarnings;
 }

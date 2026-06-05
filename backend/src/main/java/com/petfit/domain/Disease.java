@@ -26,4 +26,10 @@ public class Disease {
     @NotBlank
     @Column(name = "source_url", nullable = false, length = 500)
     private String sourceUrl;
+
+    @Column(name = "korean_name", length = 200)
+    private String koreanName;
+
+    @Column(name = "typical_onset_age")
+    private Double typicalOnsetAge;
 }

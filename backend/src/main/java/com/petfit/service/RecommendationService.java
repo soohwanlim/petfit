@@ -2,7 +2,7 @@ package com.petfit.service;
 
 import com.petfit.domain.BreedDiseaseStats;
 import com.petfit.domain.InsuranceProduct;
-import com.petfit.domain.Rider;
+import com.petfit.domain.ScoreContext;
 import com.petfit.domain.ScoreResult;
 import com.petfit.repository.mongo.InsuranceProductRepository;
 import com.petfit.repository.mysql.BreedDiseaseStatsRepository;
@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,28 +24,14 @@ public class RecommendationService {
     private final CompositeScoreCalculator compositeCalculator;
 
     @Transactional(readOnly = true)
-    public List<ScoreResult> getRecommendations(Long breedId) {
+    public List<ScoreResult> getRecommendations(Long breedId, Double catAge, List<String> illnesses) {
         List<BreedDiseaseStats> stats = statsRepository.findByBreedIdWithDisease(breedId);
         List<InsuranceProduct> products = productRepository.findAll();
+        ScoreContext ctx = new ScoreContext(stats, catAge, illnesses != null ? illnesses : List.of());
 
         return products.stream()
-                .map(product -> new ScoreResult(
-                        product,
-                        compositeCalculator.calculate(stats, product),
-                        matchedRiderNames(stats, product)
-                ))
-                .sorted(Comparator.comparingDouble(ScoreResult::getScore).reversed())
-                .collect(Collectors.toList());
-    }
-
-    private List<String> matchedRiderNames(List<BreedDiseaseStats> stats, InsuranceProduct product) {
-        Set<String> breedDiseases = stats.stream()
-                .map(s -> s.getDisease().getName())
-                .collect(Collectors.toSet());
-
-        return product.getRiders().stream()
-                .filter(r -> r.getCoveredDiseases().stream().anyMatch(breedDiseases::contains))
-                .map(Rider::getRiderName)
+                .map(product -> compositeCalculator.score(ctx, product))
+                .sorted(Comparator.comparingInt(ScoreResult::getScore).reversed())
                 .collect(Collectors.toList());
     }
 }

@@ -5,18 +5,23 @@ import com.petfit.domain.BreedDiseaseStats;
 import com.petfit.domain.Disease;
 import com.petfit.domain.InsuranceProduct;
 import com.petfit.domain.Rider;
+import com.petfit.domain.ScoreContext;
+import com.petfit.domain.ScoreResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 class ScoringTest {
 
-    private DiseaseMatchScoreCalculator matchCalc;
-    private SeverityWeightScoreCalculator severityCalc;
+    private DiseaseMatchScoreCalculator diseaseMatchCalc;
+    private IllnessBoostScoreCalculator illnessBoostCalc;
+    private CoverageScoreCalculator coverageCalc;
+    private BaseMedicalScoreCalculator baseMedicalCalc;
+    private RiderVarietyScoreCalculator varietyCalc;
+    private WaitingPenaltyScoreCalculator waitingPenaltyCalc;
     private CompositeScoreCalculator composite;
 
     private BreedDiseaseStats hcmStat;
@@ -24,19 +29,31 @@ class ScoringTest {
 
     @BeforeEach
     void setUp() {
-        matchCalc = new DiseaseMatchScoreCalculator();
-        severityCalc = new SeverityWeightScoreCalculator();
-        composite = new CompositeScoreCalculator(List.of(matchCalc, severityCalc));
+        diseaseMatchCalc   = new DiseaseMatchScoreCalculator();
+        illnessBoostCalc   = new IllnessBoostScoreCalculator();
+        coverageCalc       = new CoverageScoreCalculator();
+        baseMedicalCalc    = new BaseMedicalScoreCalculator();
+        varietyCalc        = new RiderVarietyScoreCalculator();
+        waitingPenaltyCalc = new WaitingPenaltyScoreCalculator();
+        composite = new CompositeScoreCalculator(
+                diseaseMatchCalc, illnessBoostCalc, coverageCalc,
+                baseMedicalCalc, varietyCalc, waitingPenaltyCalc);
 
         Breed maineCoon = new Breed();
         maineCoon.setName("Maine Coon");
 
         Disease hcm = new Disease();
+        hcm.setId(1L);
         hcm.setName("Hypertrophic Cardiomyopathy");
+        hcm.setKoreanName("비대성심근증");
+        hcm.setTypicalOnsetAge(5.0);
         hcm.setSourceUrl("https://example.com/hcm");
 
         Disease pkd = new Disease();
+        pkd.setId(2L);
         pkd.setName("Polycystic Kidney Disease");
+        pkd.setKoreanName("다낭성신장질환");
+        pkd.setTypicalOnsetAge(4.0);
         pkd.setSourceUrl("https://example.com/pkd");
 
         hcmStat = new BreedDiseaseStats();
@@ -55,71 +72,82 @@ class ScoringTest {
     }
 
     @Test
-    void fullCoverageScores100() {
-        InsuranceProduct full = productWithRider("All Diseases",
-                List.of("Hypertrophic Cardiomyopathy", "Polycystic Kidney Disease"));
+    void diseaseMatchScoreIncreasesWithCoverage() {
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat, pkdStat), null, List.of());
+        InsuranceProduct full = product("All Diseases", List.of("Hypertrophic Cardiomyopathy", "Polycystic Kidney Disease"), null, null);
+        InsuranceProduct none = product("Irrelevant", List.of("Hip Dysplasia"), null, null);
 
-        assertThat(matchCalc.calculate(List.of(hcmStat, pkdStat), full)).isEqualTo(100.0);
-        assertThat(severityCalc.calculate(List.of(hcmStat, pkdStat), full)).isEqualTo(100.0);
-        assertThat(composite.calculate(List.of(hcmStat, pkdStat), full)).isEqualTo(100.0);
+        assertThat(diseaseMatchCalc.calculate(ctx, full))
+                .isGreaterThan(diseaseMatchCalc.calculate(ctx, none));
     }
 
     @Test
-    void noCoverageScores0() {
-        InsuranceProduct none = productWithRider("Irrelevant", List.of("Hip Dysplasia"));
+    void illnessBoostRewardsMatchingCategory() {
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat), null, List.of("심장/순환기"));
+        InsuranceProduct withCat    = product("Cardiac", List.of(), List.of("심장/순환기"), null);
+        InsuranceProduct withoutCat = product("Other",   List.of(), List.of("비뇨기"), null);
 
-        assertThat(matchCalc.calculate(List.of(hcmStat, pkdStat), none)).isEqualTo(0.0);
-        assertThat(severityCalc.calculate(List.of(hcmStat, pkdStat), none)).isEqualTo(0.0);
-        assertThat(composite.calculate(List.of(hcmStat, pkdStat), none)).isEqualTo(0.0);
+        assertThat(illnessBoostCalc.calculate(ctx, withCat))
+                .isGreaterThan(illnessBoostCalc.calculate(ctx, withoutCat));
     }
 
     @Test
-    void partialCoverageRanksHigherThanNone() {
-        InsuranceProduct partial = productWithRider("Cardiac", List.of("Hypertrophic Cardiomyopathy"));
-        InsuranceProduct none    = productWithRider("Irrelevant", List.of());
+    void waitingPenaltyAppliedWhenEffectiveAgeExceedsOnset() {
+        // catAge=4, HCM onsetAge=5, waiting=24mo → effectiveAge=6 > 5 → penalty
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat), 4.0, List.of());
+        InsuranceProduct longWait  = product("Cardiac", List.of("Hypertrophic Cardiomyopathy"), null, 24);
+        InsuranceProduct shortWait = product("Cardiac", List.of("Hypertrophic Cardiomyopathy"), null, 1);
 
-        double partialScore = composite.calculate(List.of(hcmStat, pkdStat), partial);
-        double noneScore    = composite.calculate(List.of(hcmStat, pkdStat), none);
-
-        assertThat(partialScore).isGreaterThan(noneScore);
+        assertThat(waitingPenaltyCalc.calculate(ctx, longWait))
+                .isGreaterThan(waitingPenaltyCalc.calculate(ctx, shortWait));
     }
 
     @Test
-    void highSeverityDiseaseWeighsMoreThanMedium() {
-        // product A covers only HCM (HIGH severity, prevalence 0.30)
-        // product B covers only PKD (MEDIUM severity, prevalence 0.20)
-        // A should score higher than B on severity-weighted calculator
-        InsuranceProduct coversHcm = productWithRider("Cardiac", List.of("Hypertrophic Cardiomyopathy"));
-        InsuranceProduct coversPkd = productWithRider("Renal",   List.of("Polycystic Kidney Disease"));
+    void noCatAgeSkipsWaitingPenalty() {
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat), null, List.of());
+        InsuranceProduct p = product("Cardiac", List.of("Hypertrophic Cardiomyopathy"), null, 24);
 
-        double hcmScore = severityCalc.calculate(List.of(hcmStat, pkdStat), coversHcm);
-        double pkdScore = severityCalc.calculate(List.of(hcmStat, pkdStat), coversPkd);
-
-        assertThat(hcmScore).isGreaterThan(pkdScore);
+        assertThat(waitingPenaltyCalc.calculate(ctx, p)).isEqualTo(0.0);
     }
 
     @Test
-    void emptyBreedStatsAlwaysScoresZero() {
-        InsuranceProduct any = productWithRider("Any", List.of("Hypertrophic Cardiomyopathy"));
+    void partialCoverageScoresHigherThanNone() {
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat, pkdStat), null, List.of());
+        InsuranceProduct partial = product("Cardiac", List.of("Hypertrophic Cardiomyopathy"), null, null);
+        InsuranceProduct none    = product("Irrelevant", List.of(), null, null);
 
-        assertThat(matchCalc.calculate(List.of(), any)).isEqualTo(0.0);
-        assertThat(severityCalc.calculate(List.of(), any)).isEqualTo(0.0);
-        assertThat(composite.calculate(List.of(), any)).isEqualTo(0.0);
+        assertThat(composite.score(ctx, partial).getScore())
+                .isGreaterThan(composite.score(ctx, none).getScore());
     }
 
     @Test
-    void noRidersScoresZero() {
-        InsuranceProduct noRiders = new InsuranceProduct();
-        noRiders.setProductName("BasicPaws");
-        noRiders.setRiders(List.of());
+    void compositeScoreIsClamped0To100() {
+        ScoreContext ctx = new ScoreContext(List.of(hcmStat, pkdStat), null, List.of());
+        InsuranceProduct full = product("All", List.of("Hypertrophic Cardiomyopathy", "Polycystic Kidney Disease"), null, null);
 
-        assertThat(composite.calculate(List.of(hcmStat, pkdStat), noRiders)).isEqualTo(0.0);
+        ScoreResult result = composite.score(ctx, full);
+        assertThat(result.getScore()).isBetween(0, 100);
+        assertThat(result.getMatchedRiders()).contains("All");
     }
 
-    private InsuranceProduct productWithRider(String riderName, List<String> diseases) {
+    @Test
+    void emptyStatsScores0ForDiseaseMatch() {
+        ScoreContext ctx = new ScoreContext(List.of(), null, List.of());
+        InsuranceProduct p = product("Any", List.of("Hypertrophic Cardiomyopathy"), null, null);
+
+        assertThat(diseaseMatchCalc.calculate(ctx, p)).isEqualTo(0.0);
+    }
+
+    private InsuranceProduct product(String riderName, List<String> diseases,
+                                      List<String> illnessCategories, Integer waitingMonths) {
         InsuranceProduct p = new InsuranceProduct();
         p.setProductName("Test Product");
-        p.setRiders(List.of(new Rider(riderName, diseases, 5000.0)));
+        Rider rider = new Rider();
+        rider.setRiderName(riderName);
+        rider.setCoveredDiseases(diseases);
+        rider.setIllnessCategories(illnessCategories);
+        rider.setWaitingMonths(waitingMonths);
+        p.setRiders(List.of(rider));
         return p;
     }
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import BreedSelector from '../components/BreedSelector'
 import RecommendationList from '../components/RecommendationList'
+import DiseaseRiskChart from '../components/DiseaseRiskChart'
 import { useRecommendations } from '../hooks/useRecommendations'
+import { diseases, breedDiseaseStats } from '../data/diseases'
 
 const ILLNESS_OPTIONS = [
   '비뇨기', '심장/순환기', '관절/골격', '피부/외이도',
@@ -14,8 +16,27 @@ export default function HomePage() {
   const [breedId, setBreedId] = useState(null)
   const [catAge, setCatAge] = useState(null)
   const [illnesses, setIllnesses] = useState([])
+  const [selectedDiseaseId, setSelectedDiseaseId] = useState(null)
 
   const { recommendations, loading, error } = useRecommendations(breedId, catAge, illnesses)
+
+  const breedStats = breedId
+    ? breedDiseaseStats.filter(s => s.breedId === Number(breedId))
+    : []
+
+  const breedDiseases = breedStats
+    .map(s => {
+      const d = diseases.find(d => d.id === s.diseaseId)
+      return d ? { ...s, disease: d } : null
+    })
+    .filter(Boolean)
+
+  const selectedStat = breedDiseases.find(s => s.diseaseId === selectedDiseaseId)
+
+  function handleBreedSelect(id) {
+    setBreedId(id)
+    setSelectedDiseaseId(null)
+  }
 
   function toggleIllness(illness) {
     setIllnesses(prev =>
@@ -25,7 +46,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
-      <BreedSelector onSelect={setBreedId} />
+      <BreedSelector onSelect={handleBreedSelect} />
 
       <div>
         <label htmlFor="catAge" className="block text-sm font-medium text-gray-700 mb-1">
@@ -77,6 +98,48 @@ export default function HomePage() {
           </button>
         )}
       </div>
+
+      {/* Disease risk chart section */}
+      {breedDiseases.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <p className="text-sm font-medium text-gray-700 mb-3">
+            발병률 분석{' '}
+            <span className="text-gray-400 font-normal text-xs">
+              질환을 선택하면 연령별 누적 발병률 + 면책기간 오버레이를 볼 수 있어요
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {breedDiseases.map(({ diseaseId, disease, severity, prevalenceRate }) => (
+              <button
+                key={diseaseId}
+                type="button"
+                onClick={() => setSelectedDiseaseId(prev => prev === diseaseId ? null : diseaseId)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  selectedDiseaseId === diseaseId
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-indigo-400'
+                }`}
+              >
+                {disease.koreanName}
+                <span className={`ml-1.5 ${
+                  severity === 'HIGH'   ? 'text-red-400' :
+                  severity === 'MEDIUM' ? 'text-yellow-500' : 'text-gray-400'
+                }`}>
+                  {(prevalenceRate * 100).toFixed(0)}%
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {selectedStat && (
+            <DiseaseRiskChart
+              disease={selectedStat.disease}
+              prevalenceRate={selectedStat.prevalenceRate}
+              catAge={catAge}
+            />
+          )}
+        </div>
+      )}
 
       {breedId ? (
         <div>

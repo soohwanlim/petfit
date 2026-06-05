@@ -1,5 +1,6 @@
 package com.petfit.controller;
 
+import com.petfit.controller.dto.BreedDiseaseDto;
 import com.petfit.controller.dto.BreedDto;
 import com.petfit.service.BreedService;
 import lombok.RequiredArgsConstructor;
@@ -25,5 +26,19 @@ public class BreedController {
     public BreedDto get(@PathVariable Long id) {
         var b = breedService.findById(id);
         return new BreedDto(b.getId(), b.getName(), b.getDescription());
+    }
+
+    @GetMapping("/{id}/diseases")
+    public List<BreedDiseaseDto> diseases(@PathVariable Long id) {
+        return breedService.findDiseasesByBreedId(id).stream()
+                .map(s -> new BreedDiseaseDto(
+                        s.getDisease().getId(),
+                        s.getDisease().getName(),
+                        s.getDisease().getKoreanName(),
+                        s.getSeverity().name(),
+                        s.getPrevalenceRate(),
+                        s.getDisease().getTypicalOnsetAge()
+                ))
+                .toList();
     }
 }
