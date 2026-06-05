@@ -3,7 +3,7 @@ import BreedSelector from '../components/BreedSelector'
 import RecommendationList from '../components/RecommendationList'
 import DiseaseRiskChart from '../components/DiseaseRiskChart'
 import { useRecommendations } from '../hooks/useRecommendations'
-import { diseases, breedDiseaseStats } from '../data/diseases'
+import { useBreedDiseases } from '../hooks/useBreedDiseases'
 
 const ILLNESS_OPTIONS = [
   '비뇨기', '심장/순환기', '관절/골격', '피부/외이도',
@@ -19,17 +19,7 @@ export default function HomePage() {
   const [selectedDiseaseId, setSelectedDiseaseId] = useState(null)
 
   const { recommendations, loading, error } = useRecommendations(breedId, catAge, illnesses)
-
-  const breedStats = breedId
-    ? breedDiseaseStats.filter(s => s.breedId === Number(breedId))
-    : []
-
-  const breedDiseases = breedStats
-    .map(s => {
-      const d = diseases.find(d => d.id === s.diseaseId)
-      return d ? { ...s, disease: d } : null
-    })
-    .filter(Boolean)
+  const { breedDiseases } = useBreedDiseases(breedId)
 
   const selectedStat = breedDiseases.find(s => s.diseaseId === selectedDiseaseId)
 
@@ -109,7 +99,7 @@ export default function HomePage() {
             </span>
           </p>
           <div className="flex flex-wrap gap-2 mb-4">
-            {breedDiseases.map(({ diseaseId, disease, severity, prevalenceRate }) => (
+            {breedDiseases.map(({ diseaseId, koreanName, severity, prevalenceRate }) => (
               <button
                 key={diseaseId}
                 type="button"
@@ -120,7 +110,7 @@ export default function HomePage() {
                     : 'bg-white border-gray-300 text-gray-700 hover:border-indigo-400'
                 }`}
               >
-                {disease.koreanName}
+                {koreanName}
                 <span className={`ml-1.5 ${
                   severity === 'HIGH'   ? 'text-red-400' :
                   severity === 'MEDIUM' ? 'text-yellow-500' : 'text-gray-400'
@@ -133,7 +123,7 @@ export default function HomePage() {
 
           {selectedStat && (
             <DiseaseRiskChart
-              disease={selectedStat.disease}
+              disease={selectedStat}
               prevalenceRate={selectedStat.prevalenceRate}
               catAge={catAge}
             />
