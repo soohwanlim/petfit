@@ -27,3 +27,6 @@ application-local.yml
 # OS
 .DS_Store
 Thumbs.db
+
+# OMC 툴 상태 파일
+.omc/
