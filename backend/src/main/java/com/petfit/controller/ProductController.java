@@ -36,7 +36,11 @@ public class ProductController {
         product.setMonthlyPremium(request.monthlyPremium());
         if (request.riders() != null) {
             product.setRiders(request.riders().stream()
-                    .map(r -> new Rider(r.riderName(), r.coveredDiseases(), r.coverageLimit()))
+                    .map(r -> Rider.builder()
+                            .riderName(r.riderName())
+                            .coveredDiseases(r.coveredDiseases())
+                            .coverageLimit(r.coverageLimit())
+                            .build())
                     .toList());
         }
         return toDto(productService.save(product));

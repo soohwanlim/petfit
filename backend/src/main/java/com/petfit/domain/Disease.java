@@ -30,6 +30,6 @@ public class Disease {
     @Column(name = "korean_name", length = 200)
     private String koreanName;
 
-    @Column(name = "typical_onset_age")
+    @Column(name = "typical_onset_age", columnDefinition = "DECIMAL(4,1)")
     private Double typicalOnsetAge;
 }
