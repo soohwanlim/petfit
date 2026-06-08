@@ -1,19 +1,17 @@
 import HomePage from './pages/HomePage'
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-indigo-600">PetFit</h1>
-          <p className="text-sm text-gray-500">Cat insurance recommendations by breed</p>
-        </div>
-      </header>
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <HomePage />
-      </main>
+    <div className="min-h-screen bg-toss-bg font-sans">
+      <div className="max-w-[430px] mx-auto">
+        <header className="bg-white px-5 pt-12 pb-5">
+          <h1 className="text-xl font-bold text-toss-black">🐱 PetFit</h1>
+          <p className="text-sm text-toss-gray1 mt-1">품종별 고양이 보험 맞춤 추천</p>
+        </header>
+        <main>
+          <HomePage />
+        </main>
+      </div>
     </div>
   )
 }
-
-export default App

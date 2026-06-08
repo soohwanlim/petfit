@@ -5,12 +5,24 @@ import DiseaseRiskChart from '../components/DiseaseRiskChart'
 import { useRecommendations } from '../hooks/useRecommendations'
 import { useBreedDiseases } from '../hooks/useBreedDiseases'
 
+const AGE_OPTIONS = [
+  { label: '1세 미만', value: 0.5 },
+  { label: '1세', value: 1 },
+  { label: '2세', value: 2 },
+  { label: '3세', value: 3 },
+  { label: '4세', value: 4 },
+  { label: '5세', value: 5 },
+  { label: '6세', value: 6 },
+  { label: '7세', value: 7 },
+  { label: '8세', value: 8 },
+  { label: '9세', value: 9 },
+  { label: '10세+', value: 12 },
+]
+
 const ILLNESS_OPTIONS = [
   '비뇨기', '심장/순환기', '관절/골격', '피부/외이도',
   '치과/구강', '호흡기', '소화기', '눈/안과',
 ]
-
-const AGE_OPTIONS = Array.from({ length: 31 }, (_, i) => i * 0.5)
 
 export default function HomePage() {
   const [breedId, setBreedId] = useState(null)
@@ -35,43 +47,55 @@ export default function HomePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <BreedSelector onSelect={handleBreedSelect} />
+    <div>
+      {/* STEP 1 — 품종 */}
+      <section className="bg-white px-5 py-6">
+        <p className="text-[11px] font-semibold text-toss-gray2 tracking-widest mb-2">STEP 1</p>
+        <h2 className="text-base font-bold text-toss-black mb-4">고양이 품종을 선택해주세요</h2>
+        <BreedSelector onSelect={handleBreedSelect} />
+      </section>
 
-      <div>
-        <label htmlFor="catAge" className="block text-sm font-medium text-gray-700 mb-1">
-          고양이 나이
-        </label>
-        <select
-          id="catAge"
-          defaultValue=""
-          onChange={e => setCatAge(e.target.value !== '' ? Number(e.target.value) : null)}
-          className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
-        >
-          <option value="">나이를 선택하세요…</option>
-          {AGE_OPTIONS.map(age => (
-            <option key={age} value={age}>
-              {age === 0 ? '0세 (갓 태어남)' : age === 0.5 ? '6개월' : `${age}세`}
-            </option>
+      <div className="h-2 bg-toss-bg" />
+
+      {/* STEP 2 — 나이 */}
+      <section className="bg-white px-5 py-6">
+        <p className="text-[11px] font-semibold text-toss-gray2 tracking-widest mb-2">STEP 2</p>
+        <h2 className="text-base font-bold text-toss-black mb-4">고양이 나이를 알려주세요</h2>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-5 px-5">
+          {AGE_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setCatAge(prev => prev === opt.value ? null : opt.value)}
+              className={`flex-none px-4 py-2.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                catAge === opt.value
+                  ? 'bg-toss-blue text-white'
+                  : 'bg-toss-bg text-toss-gray1'
+              }`}
+            >
+              {opt.label}
+            </button>
           ))}
-        </select>
-      </div>
+        </div>
+      </section>
 
-      <div>
-        <p className="block text-sm font-medium text-gray-700 mb-2">
-          아팠던 곳{' '}
-          <span className="text-gray-400 font-normal">(해당되는 곳을 모두 선택)</span>
-        </p>
+      <div className="h-2 bg-toss-bg" />
+
+      {/* STEP 3 — 병력 */}
+      <section className="bg-white px-5 py-6">
+        <p className="text-[11px] font-semibold text-toss-gray2 tracking-widest mb-2">STEP 3</p>
+        <h2 className="text-base font-bold text-toss-black">아팠던 부위가 있나요?</h2>
+        <p className="text-sm text-toss-gray1 mt-1 mb-4">해당되는 곳을 모두 선택해주세요</p>
         <div className="flex flex-wrap gap-2">
           {ILLNESS_OPTIONS.map(illness => (
             <button
               key={illness}
               type="button"
               onClick={() => toggleIllness(illness)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 illnesses.includes(illness)
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+                  ? 'bg-toss-blue-light text-toss-blue'
+                  : 'bg-toss-bg text-toss-gray1'
               }`}
             >
               {illness}
@@ -82,73 +106,75 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setIllnesses([])}
-            className="mt-2 text-xs text-gray-400 hover:text-gray-600"
+            className="mt-3 text-xs text-toss-gray2 underline underline-offset-2"
           >
             선택 초기화
           </button>
         )}
-      </div>
+      </section>
 
-      {/* Disease risk chart section */}
+      {/* 발병률 분석 */}
       {breedDiseases.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-sm font-medium text-gray-700 mb-3">
-            발병률 분석{' '}
-            <span className="text-gray-400 font-normal text-xs">
-              질환을 선택하면 연령별 누적 발병률 + 면책기간 오버레이를 볼 수 있어요
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {breedDiseases.map(({ diseaseId, koreanName, severity, prevalenceRate }) => (
-              <button
-                key={diseaseId}
-                type="button"
-                onClick={() => setSelectedDiseaseId(prev => prev === diseaseId ? null : diseaseId)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  selectedDiseaseId === diseaseId
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white border-gray-300 text-gray-700 hover:border-indigo-400'
-                }`}
-              >
-                {koreanName}
-                <span className={`ml-1.5 ${
-                  severity === 'HIGH'   ? 'text-red-400' :
-                  severity === 'MEDIUM' ? 'text-yellow-500' : 'text-gray-400'
-                }`}>
-                  {(prevalenceRate * 100).toFixed(0)}%
-                </span>
-              </button>
-            ))}
+        <>
+          <div className="h-2 bg-toss-bg" />
+          <section className="bg-white px-5 py-6">
+            <h2 className="text-base font-bold text-toss-black">품종 발병률 분석</h2>
+            <p className="text-sm text-toss-gray1 mt-1 mb-4">질환을 선택하면 연령별 누적 발병률을 볼 수 있어요</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {breedDiseases.map(({ diseaseId, koreanName, severity, prevalenceRate }) => (
+                <button
+                  key={diseaseId}
+                  type="button"
+                  onClick={() => setSelectedDiseaseId(prev => prev === diseaseId ? null : diseaseId)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium transition-colors ${
+                    selectedDiseaseId === diseaseId
+                      ? 'bg-toss-blue text-white'
+                      : 'bg-toss-bg text-toss-gray1'
+                  }`}
+                >
+                  {koreanName}
+                  <span className={`text-xs font-bold ${
+                    selectedDiseaseId === diseaseId ? 'text-white/70' :
+                    severity === 'HIGH'   ? 'text-toss-red' :
+                    severity === 'MEDIUM' ? 'text-toss-orange' : 'text-toss-gray2'
+                  }`}>
+                    {(prevalenceRate * 100).toFixed(0)}%
+                  </span>
+                </button>
+              ))}
+            </div>
+            {selectedStat && (
+              <DiseaseRiskChart
+                disease={selectedStat}
+                prevalenceRate={selectedStat.prevalenceRate}
+                catAge={catAge}
+              />
+            )}
+          </section>
+        </>
+      )}
+
+      {/* 추천 결과 */}
+      <div className="h-2 bg-toss-bg" />
+      <section className="bg-white px-5 py-6 pb-16">
+        {!breedId ? (
+          <div className="text-center py-12">
+            <div className="text-5xl mb-4">🐾</div>
+            <p className="text-base font-bold text-toss-black">품종을 선택해주세요</p>
+            <p className="text-sm text-toss-gray1 mt-1.5">맞춤형 보험 플랜을 추천해드릴게요</p>
           </div>
-
-          {selectedStat && (
-            <DiseaseRiskChart
-              disease={selectedStat}
-              prevalenceRate={selectedStat.prevalenceRate}
-              catAge={catAge}
-            />
-          )}
-        </div>
-      )}
-
-      {breedId ? (
-        <div>
-          <p className="text-sm text-gray-500 mb-3">
-            {loading
-              ? '최적 플랜 탐색 중…'
-              : `${recommendations.length}개 플랜이 추천되었습니다`}
-          </p>
-          <RecommendationList
-            recommendations={recommendations}
-            loading={loading}
-            error={error}
-          />
-        </div>
-      ) : (
-        <div className="text-center py-12 text-gray-400">
-          <p className="text-lg">품종을 선택하면 맞춤형 보험 추천을 확인할 수 있어요</p>
-        </div>
-      )}
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-toss-black">추천 보험 플랜</h2>
+              {!loading && recommendations.length > 0 && (
+                <span className="text-sm text-toss-gray1">{recommendations.length}개</span>
+              )}
+            </div>
+            <RecommendationList recommendations={recommendations} loading={loading} error={error} />
+          </>
+        )}
+      </section>
     </div>
   )
 }

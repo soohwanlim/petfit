@@ -15,7 +15,7 @@ function CustomTooltip({ active, payload, label }) {
   return (
     <div className="bg-white border border-gray-200 rounded px-3 py-2 shadow-sm text-xs">
       <p className="font-medium text-gray-700 mb-0.5">{label}세</p>
-      <p className="text-indigo-600">누적 발병률 {payload[0].value.toFixed(1)}%</p>
+      <p className="text-[#3182F6]">누적 발병률 {payload[0].value.toFixed(1)}%</p>
     </div>
   )
 }
@@ -83,19 +83,19 @@ export default function DiseaseRiskChart({ disease, prevalenceRate, catAge }) {
           ))}
 
           {catAge != null && catAge >= 0 && catAge <= 14 && (
-            <ReferenceLine x={catAge} stroke="#6366f1" strokeWidth={2} strokeDasharray="4 2">
-              <Label value="현재 나이" position="insideTopRight" fontSize={10} fill="#6366f1" offset={4} />
+            <ReferenceLine x={catAge} stroke="#3182F6" strokeWidth={2} strokeDasharray="4 2">
+              <Label value="현재 나이" position="insideTopRight" fontSize={10} fill="#3182F6" offset={4} />
             </ReferenceLine>
           )}
 
           <Area
             type="monotone"
             dataKey="risk"
-            stroke="#6366f1"
-            fill="#e0e7ff"
+            stroke="#3182F6"
+            fill="#EBF3FE"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4, fill: '#6366f1' }}
+            activeDot={{ r: 4, fill: '#3182F6' }}
           />
         </AreaChart>
       </ResponsiveContainer>

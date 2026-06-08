@@ -9,87 +9,104 @@ export default function RecommendationCard({ recommendation }) {
   const illnessOnlyRiders = (illnessRiders ?? []).filter(r => !(matchedRiders ?? []).includes(r))
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="font-semibold text-gray-900">{productName}</h3>
-          <p className="text-sm text-gray-500">{provider}</p>
+    <div className="bg-white rounded-2xl border border-toss-line overflow-hidden">
+      {/* 헤더 */}
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-toss-gray1 mb-0.5">{provider}</p>
+            <h3 className="text-[15px] font-bold text-toss-black leading-snug">{productName}</h3>
+          </div>
+          <ScoreBadge score={score} />
         </div>
-        <ScoreBadge score={score} />
+        <div className="mt-3 flex items-baseline gap-1">
+          <span className="text-xl font-bold text-toss-black">
+            {monthlyPremium?.toLocaleString('ko-KR')}
+          </span>
+          <span className="text-sm text-toss-gray1">원/월</span>
+        </div>
       </div>
 
-      {/* Premium */}
-      <div className="mt-3 text-sm text-gray-700">
-        <span className="font-medium">{monthlyPremium?.toLocaleString('ko-KR')}원</span>
-        <span className="text-gray-400">/월</span>
-      </div>
-
-      {/* Score breakdown */}
+      {/* 점수 세부 */}
       {breakdown && (
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div className="border-t border-toss-line px-5 py-4 grid grid-cols-3 gap-3 text-center">
           {[
-            { label: '특약적합도', value: breakdown.riderFit },
-            { label: '보장비율',   value: breakdown.coverage },
-            { label: '면책기간',   value: breakdown.waiting },
-          ].map(({ label, value }) => (
-            <div key={label} className="bg-gray-50 rounded-md p-2">
-              <div className="text-xs text-gray-500 mb-0.5">{label}</div>
-              {value != null ? (
-                <div className={`text-sm font-bold ${
-                  value >= 70 ? 'text-green-600' : value >= 40 ? 'text-yellow-600' : 'text-red-600'
-                }`}>
-                  {value}
+            { label: '특약 적합도', value: breakdown.riderFit },
+            { label: '보장 비율',   value: breakdown.coverage },
+            { label: '면책 기간',   value: breakdown.waiting },
+          ].map(({ label, value }) => {
+            const color =
+              value == null ? 'text-toss-gray2'
+              : value >= 70 ? 'text-toss-blue'
+              : value >= 40 ? 'text-toss-orange'
+              : 'text-toss-red'
+            const barColor =
+              value == null ? 'bg-toss-line'
+              : value >= 70 ? 'bg-toss-blue'
+              : value >= 40 ? 'bg-toss-orange'
+              : 'bg-toss-red'
+            return (
+              <div key={label}>
+                <p className="text-xs text-toss-gray1 mb-1">{label}</p>
+                <p className={`text-sm font-bold ${color}`}>
+                  {value != null ? value : '—'}
+                </p>
+                <div className="mt-1.5 h-1 bg-toss-line rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${barColor}`}
+                    style={{ width: value != null ? `${Math.min(value, 100)}%` : '0%' }}
+                  />
                 </div>
-              ) : (
-                <div className="text-sm text-gray-400">—</div>
-              )}
-            </div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       )}
 
-      {/* Recommended riders */}
+      {/* 추천 특약 */}
       {((matchedRiders?.length ?? 0) > 0 || illnessOnlyRiders.length > 0) && (
-        <div className="mt-3">
-          <p className="text-xs font-medium text-gray-500 mb-1.5">추천 특약</p>
+        <div className="border-t border-toss-line px-5 py-4">
+          <p className="text-xs font-semibold text-toss-gray1 mb-2">추천 특약</p>
           <div className="flex flex-wrap gap-1.5">
             {(matchedRiders ?? []).map(rider => (
-              <span key={rider} className="inline-block bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded">
+              <span key={rider} className="bg-toss-blue-light text-toss-blue text-xs font-medium px-2.5 py-1 rounded-full">
                 {rider}
               </span>
             ))}
             {illnessOnlyRiders.map(rider => (
-              <span key={rider} className="inline-block bg-amber-50 text-amber-700 text-xs px-2 py-1 rounded">
-                {rider} <span className="opacity-70">(병력)</span>
+              <span key={rider} className="bg-orange-50 text-toss-orange text-xs font-medium px-2.5 py-1 rounded-full">
+                {rider} · 병력
               </span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Waiting period warnings */}
+      {/* 면책기간 경고 */}
       {(waitingWarnings?.length ?? 0) > 0 && (
-        <div className="mt-3 space-y-1">
+        <div className="border-t border-toss-line px-5 py-3 space-y-1.5">
           {waitingWarnings.map((w, i) => (
-            <p key={i} className="text-xs text-amber-600 flex items-start gap-1">
-              <span className="mt-px">⚠</span>
+            <p key={i} className="text-xs text-toss-orange flex items-start gap-1.5">
+              <span>⚠️</span>
               <span>{w}</span>
             </p>
           ))}
         </div>
       )}
 
-      {/* Insurer link */}
+      {/* 가입 링크 */}
       {url && (
-        <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="border-t border-toss-line px-5 py-4">
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+            className="flex items-center justify-center gap-1.5 w-full py-3 bg-toss-blue-light text-toss-blue text-sm font-semibold rounded-xl"
           >
-            {provider} 가입 페이지 →
+            {provider} 가입 페이지 보기
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5.5 3L9.5 7L5.5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </a>
         </div>
       )}

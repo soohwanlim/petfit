@@ -1,13 +1,16 @@
 export default function ScoreBadge({ score }) {
   const rounded = Math.round(score)
-  const color =
-    score >= 70 ? 'bg-green-100 text-green-800'
-    : score >= 40 ? 'bg-yellow-100 text-yellow-800'
-    : 'bg-red-100 text-red-800'
+  const [color, label] =
+    score >= 70 ? ['text-toss-blue', '적합']
+    : score >= 40 ? ['text-toss-orange', '보통']
+    : ['text-toss-gray1', '낮음']
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-semibold ${color}`}>
-      {rounded}%
-    </span>
+    <div className="text-right shrink-0">
+      <div className={`text-2xl font-bold leading-none ${color}`}>
+        {rounded}<span className="text-sm font-semibold">점</span>
+      </div>
+      <div className={`text-xs font-medium mt-0.5 ${color}`}>{label}</div>
+    </div>
   )
 }
